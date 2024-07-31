@@ -67,17 +67,18 @@ class Assignment(db.Model):
         assertions.assert_valid(assignment.content is not None, 'assignment with empty content cannot be submitted')
 
         assignment.teacher_id = teacher_id
+        assignment.state = AssignmentStateEnum.SUBMITTED
         db.session.flush()
 
         return assignment
 
 
     @classmethod
-    def mark_grade(cls, _id, grade, auth_principal: AuthPrincipal):
+    def mark_grade_by_teacher(cls, _id, grade, auth_principal: AuthPrincipal):
         assignment = Assignment.get_by_id(_id)
         assertions.assert_found(assignment, 'No assignment with this id was found')
         assertions.assert_valid(grade is not None, 'assignment with empty grade cannot be graded')
-
+        assertions.assert_auth(assignment.state != AssignmentStateEnum.GRADED, 'Assignment cannot be Re-Grdaded by a teacher')
         assignment.grade = grade
         assignment.state = AssignmentStateEnum.GRADED
         db.session.flush()
