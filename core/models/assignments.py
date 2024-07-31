@@ -84,6 +84,17 @@ class Assignment(db.Model):
         db.session.flush()
 
         return assignment
+    
+    @classmethod
+    def mark_grade_by_principal(cls, _id, grade, auth_principal: AuthPrincipal):
+        assignment = Assignment.get_by_id(_id)
+        assertions.assert_found(assignment, 'No assignment with this id was found')
+        assertions.assert_valid(grade is not None, 'assignment with empty grade cannot be graded')
+        assignment.grade = grade
+        assignment.state = AssignmentStateEnum.GRADED
+        db.session.flush()
+
+        return assignment
 
     @classmethod
     def get_assignments_by_student(cls, student_id):

@@ -22,3 +22,19 @@ def list_teachers(p):
      list_of_teachers = Teacher.get_teachers_by_principal()
      list_of_teachers_dump = TeacherSchema().dump(list_of_teachers,many = True)
      return APIResponse.respond(data=list_of_teachers_dump)
+
+@principal_assignments_resources.route('/assignments/grade', methods=['POST'], strict_slashes=False)
+@decorators.accept_payload
+@decorators.authenticate_principal
+def grade_assignment(p, incoming_payload):
+    """Grade an assignment"""
+    grade_assignment_payload = AssignmentGradeSchema().load(incoming_payload)
+
+    graded_assignment = Assignment.mark_grade_by_principal(
+        _id=grade_assignment_payload.id,
+        grade=grade_assignment_payload.grade,
+        auth_principal=p
+    )
+    db.session.commit()
+    graded_assignment_dump = AssignmentSchema().dump(graded_assignment)
+    return APIResponse.respond(data=graded_assignment_dump)
